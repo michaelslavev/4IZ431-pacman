@@ -87,11 +87,8 @@ def depthFirstSearch(problem):
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
     "*** YOUR CODE HERE ***"
-    from pprint import pprint
     print("\nDFS Search starts here")
-    # util.raiseNotDefined()
 
-    # Stack for DFS
     stack = util.Stack()
     visited_nodes = set()
     path = []
@@ -105,29 +102,24 @@ def depthFirstSearch(problem):
         current_node = stack.pop()
         current_state = current_node[0]
 
-        # Skip if visited
-        if current_state in visited_nodes:
-            continue 
-        visited_nodes.add(current_state)
+        if current_state not in visited_nodes:            
+            visited_nodes.add(current_state)
 
-        # Goal found, create path
-        if problem.isGoalState(current_state):
-            # traversing from finish node to start node
-            while memory_map[current_node] is not None:
-                path.append(current_node[1])
-                current_node = memory_map[current_node]
+            # Goal found, create path
+            if problem.isGoalState(current_state):
+                # traversing from finish node to start node
+                while memory_map[current_node] is not None:
+                    path.append(current_node[1])
+                    current_node = memory_map[current_node]
+                return path[::-1]
 
-            #pprint(memory_map)
-            #pprint(path)
-            return path[::-1]
+            # find next succesor node
+            for successor_node in problem.getSuccessors(current_state):
+                if successor_node[0] not in visited_nodes:
+                    memory_map[successor_node] = current_node
+                    stack.push(successor_node)
 
-        # find next succesor node
-        for successor_node in problem.getSuccessors(current_state):
-            if successor_node[0] not in visited_nodes:
-                memory_map[successor_node] = current_node
-                stack.push(successor_node)
-
-    print("Path not found")
+    print("#### Path not found ####\n\n")
     return False
     
 
@@ -136,7 +128,6 @@ def breadthFirstSearch(problem):
     "*** YOUR CODE HERE ***"
     print("BFS Search starts here\n")
 
-    # Stack for BFS
     queue = util.Queue()
     visited_nodes = set()
     path = []
@@ -150,27 +141,24 @@ def breadthFirstSearch(problem):
         current_node = queue.pop()
         current_state = current_node[0]
 
-        # Skip if visited
-        if current_state in visited_nodes:
-            continue 
-        visited_nodes.add(current_state)
+        if current_state not in visited_nodes:
+            visited_nodes.add(current_state)
 
-        # Goal found, create path
-        if problem.isGoalState(current_state):
-            # traversing from finish node to start node
-            while memory_map[current_node] is not None:
-                path.append(current_node[1])
-                current_node = memory_map[current_node]
-                
-            return path[::-1]
+            # Goal found, create path
+            if problem.isGoalState(current_state):
+                # traversing from finish node to start node
+                while memory_map[current_node] is not None:
+                    path.append(current_node[1])
+                    current_node = memory_map[current_node]                    
+                return path[::-1]
 
-        # find next succesor node
-        for successor_node in problem.getSuccessors(current_state):
-            if successor_node[0] not in visited_nodes:
-                memory_map[successor_node] = current_node
-                queue.push(successor_node)
+            # find next succesor node
+            for successor_node in problem.getSuccessors(current_state):
+                if successor_node[0] not in visited_nodes:
+                    memory_map[successor_node] = current_node
+                    queue.push(successor_node)
 
-    print("Path not found")
+    print("#### Path not found ####\n\n")
     return False
 
 
@@ -179,7 +167,6 @@ def uniformCostSearch(problem):
     "*** YOUR CODE HERE ***"
     print("UCS Search starts here\n")
 
-    # Stack for DFS
     priority_queue = util.PriorityQueue()
     visited_nodes = set()
     path = []
@@ -194,28 +181,25 @@ def uniformCostSearch(problem):
         current_node = priority_queue.pop()
         current_state = current_node[0]
         
-        # Skip if visited
-        if current_state in visited_nodes:
-            continue
-        visited_nodes.add(current_state)
+        if current_state not in visited_nodes:
+            visited_nodes.add(current_state)
 
-        # Goal found, create path
-        if problem.isGoalState(current_state):
-            # traversing from finish node to start node
-            while memory_map[current_node] is not None:
-                path.append(current_node[1])
-                current_node = memory_map[current_node]
-                
-            return path[::-1]
+            # Goal found, create path
+            if problem.isGoalState(current_state):
+                # traversing from finish node to start node
+                while memory_map[current_node] is not None:
+                    path.append(current_node[1])
+                    current_node = memory_map[current_node]
+                return path[::-1]
 
-        # find next succesor node
-        for successor in problem.getSuccessors(current_state):
-            if successor[0] not in visited_nodes:
-                memory_map[successor] = current_node
-                node_cost[successor[0]] = successor[2] + node_cost[current_node[0]]
-                priority_queue.push(successor, node_cost[successor[0]])
+            # find next succesor node
+            for successor in problem.getSuccessors(current_state):
+                if successor[0] not in visited_nodes:
+                    memory_map[successor] = current_node
+                    node_cost[successor[0]] = successor[2] + node_cost[current_node[0]]
+                    priority_queue.push(successor, node_cost[successor[0]])
 
-    print("Path not found")
+    print("#### Path not found ####\n\n")
     return False
 
 
@@ -229,7 +213,43 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    print("aStart Search starts here\n")
+
+    priority_queue = util.PriorityQueue()
+    visited_nodes = set()
+    path = []
+    # Start node tuple - Location, action, cost
+    start_node = (problem.getStartState(), 'Stop', 0)
+    # Store nodes as keys with parent node as value 
+    memory_map = {start_node : None}
+    priority_queue.push(start_node, heuristic(start_node[0],problem))
+    node_cost = {problem.getStartState() : 0}
+
+    while not priority_queue.isEmpty():
+        current_node = priority_queue.pop()
+        current_state = current_node[0]
+        
+        if current_state not in visited_nodes:
+            visited_nodes.add(current_state)
+
+            # Goal found, create path
+            if problem.isGoalState(current_state):
+                # traversing from finish node to start node
+                while memory_map[current_node] is not None:
+                    path.append(current_node[1])
+                    current_node = memory_map[current_node]
+                return path[::-1]
+
+            # find next succesor node
+            for successor in problem.getSuccessors(current_state):
+                if successor[0] not in visited_nodes:
+                    memory_map[successor] = current_node
+                    node_cost[successor[0]] = successor[2] + node_cost[current_node[0]]
+                    priority = node_cost[successor[0]] + heuristic(successor[0], problem)
+                    priority_queue.push(successor, priority)
+    
+    print("#### Path not found ####\n\n")
+    return False
 
 
 # Abbreviations
