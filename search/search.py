@@ -73,6 +73,7 @@ def tinyMazeSearch(problem):
     w = Directions.WEST
     return  [s, s, w, s, w, w, s, w]
 
+
 def depthFirstSearch(problem):
     """
     Search the deepest nodes in the search tree first.
@@ -88,7 +89,7 @@ def depthFirstSearch(problem):
     print("Start's successors:", problem.getSuccessors(problem.getStartState()))
     """
     "*** YOUR CODE HERE ***"
-    print("\nDFS Search starts here")
+    # print("\nDFS Search starts here")
 
     stack = util.Stack()
     visited_nodes = set()
@@ -115,12 +116,11 @@ def depthFirstSearch(problem):
     print("#### Path not found ####\n\n")
     return False
 
-    
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    print("BFS Search starts here\n")
+    # print("BFS Search starts here\n")
 
     queue = util.Queue()
     visited_nodes = set()
@@ -132,8 +132,7 @@ def breadthFirstSearch(problem):
 
     while not queue.isEmpty():
         current_node, path = queue.pop()
-        
-        
+
         if current_node[0] in visited_nodes:
             continue
 
@@ -144,13 +143,13 @@ def breadthFirstSearch(problem):
 
         for successor_node in problem.getSuccessors(current_node[0]):
             queue.push((successor_node, path + [successor_node[1]]))
-                
 
     print("#### Path not found ####\n\n")
     return False
 
+
 def uniformCostSearch(problem):
-    print("UCS Search starts here\n")
+    # print("UCS Search starts here\n")
 
     priority_queue = util.PriorityQueue()
     visited_nodes = set()
@@ -189,10 +188,11 @@ def nullHeuristic(state, problem=None):
     """
     return 0
 
+
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    print("aStart Search starts here\n")
+    # print("aStart Search starts here\n")
 
     priority_queue = util.PriorityQueue()
     visited_nodes = set()
