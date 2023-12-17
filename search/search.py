@@ -100,14 +100,17 @@ def depthFirstSearch(problem):
 
     while not stack.isEmpty():
         current_node, path = stack.pop()
+        
+        if current_node[0] in visited_nodes:
+            continue
+        
         visited_nodes.add(current_node[0])
 
         if problem.isGoalState(current_node[0]):
             return path
 
         for successor_node in problem.getSuccessors(current_node[0]):
-            if successor_node[0] not in visited_nodes:
-                stack.push((successor_node, path + [successor_node[1]]))
+            stack.push((successor_node, path + [successor_node[1]]))                
 
     print("#### Path not found ####\n\n")
     return False
@@ -129,14 +132,19 @@ def breadthFirstSearch(problem):
 
     while not queue.isEmpty():
         current_node, path = queue.pop()
-        visited_nodes.add(current_node[0])
+        
+        
+        if current_node[0] in visited_nodes:
+            continue
 
+        visited_nodes.add(current_node[0])
+        
         if problem.isGoalState(current_node[0]):
             return path
 
         for successor_node in problem.getSuccessors(current_node[0]):
-            if successor_node[0] not in visited_nodes:
-                queue.push((successor_node, path + [successor_node[1]]))
+            queue.push((successor_node, path + [successor_node[1]]))
+                
 
     print("#### Path not found ####\n\n")
     return False
@@ -152,6 +160,10 @@ def uniformCostSearch(problem):
 
     while not priority_queue.isEmpty():
         current_node, path = priority_queue.pop()
+        
+        if current_node[0] in visited_nodes:
+            continue
+        
         visited_nodes.add(current_node[0])
 
         if problem.isGoalState(current_node[0]):
@@ -160,7 +172,7 @@ def uniformCostSearch(problem):
         for successor_state, action, cost in problem.getSuccessors(current_node[0]):
             total_cost = node_cost[current_node[0]] + cost
 
-            if (successor_state not in visited_nodes) and (successor_state not in node_cost) or (total_cost < node_cost[successor_state]):
+            if (successor_state not in node_cost) or (total_cost < node_cost[successor_state]):
                 node_cost[successor_state] = total_cost
                 new_path = path + [action]
                 new_node = (successor_state, action, total_cost)
@@ -191,6 +203,10 @@ def aStarSearch(problem, heuristic=nullHeuristic):
 
     while not priority_queue.isEmpty():
         current_node, path = priority_queue.pop()
+        
+        if current_node[0] in visited_nodes:
+            continue
+        
         visited_nodes.add(current_node[0])
 
         if problem.isGoalState(current_node[0]):
@@ -199,7 +215,7 @@ def aStarSearch(problem, heuristic=nullHeuristic):
         for successor_state, action, cost in problem.getSuccessors(current_node[0]):
             total_cost = node_cost[current_node[0]] + cost
 
-            if (successor_state not in visited_nodes) and ((successor_state not in node_cost) or (total_cost < node_cost[successor_state])):
+            if (successor_state not in node_cost) or (total_cost < node_cost[successor_state]):
                 node_cost[successor_state] = total_cost
                 priority = total_cost + heuristic(successor_state, problem)
                 priority_queue.push(((successor_state, action, total_cost), path + [action]), priority)
