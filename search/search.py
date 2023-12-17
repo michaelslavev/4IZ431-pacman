@@ -17,6 +17,7 @@ In search.py, you will implement generic search algorithms which are called by
 Pacman agents (in searchAgents.py).
 """
 
+from time import sleep
 import util
 
 class SearchProblem:
@@ -91,36 +92,26 @@ def depthFirstSearch(problem):
 
     stack = util.Stack()
     visited_nodes = set()
-    path = []
+    
     # Start node tuple (Location, action, cost)
-    start_node = (problem.getStartState(), 'Stop', 0)
-    # Store nodes as keys with parent node as value 
-    memory_map = {start_node : None}
-    stack.push(start_node)
+    start_node = (problem.getStartState(), None, 0)
+    # Stack with node + path to that node
+    stack.push((start_node, []))
 
     while not stack.isEmpty():
-        current_node = stack.pop()
-        current_state = current_node[0]
+        current_node, path = stack.pop()
+        visited_nodes.add(current_node[0])
 
-        if current_state not in visited_nodes:            
-            visited_nodes.add(current_state)
+        if problem.isGoalState(current_node[0]):
+            return path
 
-            # Goal found, create path
-            if problem.isGoalState(current_state):
-                # traversing from finish node to start node
-                while memory_map[current_node] is not None:
-                    path.append(current_node[1])
-                    current_node = memory_map[current_node]
-                return path[::-1]
-
-            # find next succesor node
-            for successor_node in problem.getSuccessors(current_state):
-                if successor_node[0] not in visited_nodes:
-                    memory_map[successor_node] = current_node
-                    stack.push(successor_node)
+        for successor_node in problem.getSuccessors(current_node[0]):
+            if successor_node[0] not in visited_nodes:
+                stack.push((successor_node, path + [successor_node[1]]))
 
     print("#### Path not found ####\n\n")
     return False
+
     
 
 def breadthFirstSearch(problem):
@@ -130,74 +121,50 @@ def breadthFirstSearch(problem):
 
     queue = util.Queue()
     visited_nodes = set()
-    path = []
+    
     # Start node tuple (Location, action, cost)
-    start_node = (problem.getStartState(), 'Stop', 0)
-    # Store nodes as keys with parent node as value 
-    memory_map = {start_node : None}
-    queue.push(start_node)
+    start_node = (problem.getStartState(), None, 0)
+    # Queue with node + path to that node
+    queue.push((start_node, []))
 
     while not queue.isEmpty():
-        current_node = queue.pop()
-        current_state = current_node[0]
+        current_node, path = queue.pop()
+        visited_nodes.add(current_node[0])
 
-        if current_state not in visited_nodes:
-            visited_nodes.add(current_state)
+        if problem.isGoalState(current_node[0]):
+            return path
 
-            # Goal found, create path
-            if problem.isGoalState(current_state):
-                # traversing from finish node to start node
-                while memory_map[current_node] is not None:
-                    path.append(current_node[1])
-                    current_node = memory_map[current_node]                    
-                return path[::-1]
-
-            # find next succesor node
-            for successor_node in problem.getSuccessors(current_state):
-                if successor_node[0] not in visited_nodes:
-                    memory_map[successor_node] = current_node
-                    queue.push(successor_node)
+        for successor_node in problem.getSuccessors(current_node[0]):
+            if successor_node[0] not in visited_nodes:
+                queue.push((successor_node, path + [successor_node[1]]))
 
     print("#### Path not found ####\n\n")
     return False
 
-
 def uniformCostSearch(problem):
-    """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
     print("UCS Search starts here\n")
 
     priority_queue = util.PriorityQueue()
     visited_nodes = set()
-    path = []
-    # Start node tuple - Location, action, cost
-    start_node = (problem.getStartState(), 'Stop', 0)
-    # Store nodes as keys with parent node as value 
-    memory_map = {start_node : None}
-    priority_queue.push(start_node, 0)
-    node_cost = {problem.getStartState() : 0}
+    start_node = (problem.getStartState(), None, 0)
+    priority_queue.push((start_node, []), 0)
+    node_cost = {problem.getStartState(): 0}
 
     while not priority_queue.isEmpty():
-        current_node = priority_queue.pop()
-        current_state = current_node[0]
-        
-        if current_state not in visited_nodes:
-            visited_nodes.add(current_state)
+        current_node, path = priority_queue.pop()
+        visited_nodes.add(current_node[0])
 
-            # Goal found, create path
-            if problem.isGoalState(current_state):
-                # traversing from finish node to start node
-                while memory_map[current_node] is not None:
-                    path.append(current_node[1])
-                    current_node = memory_map[current_node]
-                return path[::-1]
+        if problem.isGoalState(current_node[0]):
+            return path
 
-            # find next succesor node
-            for successor in problem.getSuccessors(current_state):
-                if successor[0] not in visited_nodes:
-                    memory_map[successor] = current_node
-                    node_cost[successor[0]] = successor[2] + node_cost[current_node[0]]
-                    priority_queue.push(successor, node_cost[successor[0]])
+        for successor_state, action, cost in problem.getSuccessors(current_node[0]):
+            total_cost = node_cost[current_node[0]] + cost
+
+            if (successor_state not in visited_nodes) and (successor_state not in node_cost) or (total_cost < node_cost[successor_state]):
+                node_cost[successor_state] = total_cost
+                new_path = path + [action]
+                new_node = (successor_state, action, total_cost)
+                priority_queue.push((new_node, new_path), total_cost)
 
     print("#### Path not found ####\n\n")
     return False
@@ -217,37 +184,26 @@ def aStarSearch(problem, heuristic=nullHeuristic):
 
     priority_queue = util.PriorityQueue()
     visited_nodes = set()
-    path = []
-    # Start node tuple - Location, action, cost
-    start_node = (problem.getStartState(), 'Stop', 0)
-    # Store nodes as keys with parent node as value 
-    memory_map = {start_node : None}
-    priority_queue.push(start_node, heuristic(start_node[0],problem))
-    node_cost = {problem.getStartState() : 0}
+
+    start_node = (problem.getStartState(), None, 0)
+    priority_queue.push((start_node, []), heuristic(start_node[0], problem))
+    node_cost = {problem.getStartState(): 0}
 
     while not priority_queue.isEmpty():
-        current_node = priority_queue.pop()
-        current_state = current_node[0]
-        
-        if current_state not in visited_nodes:
-            visited_nodes.add(current_state)
+        current_node, path = priority_queue.pop()
+        visited_nodes.add(current_node[0])
 
-            # Goal found, create path
-            if problem.isGoalState(current_state):
-                # traversing from finish node to start node
-                while memory_map[current_node] is not None:
-                    path.append(current_node[1])
-                    current_node = memory_map[current_node]
-                return path[::-1]
+        if problem.isGoalState(current_node[0]):
+            return path
 
-            # find next succesor node
-            for successor in problem.getSuccessors(current_state):
-                if successor[0] not in visited_nodes:
-                    memory_map[successor] = current_node
-                    node_cost[successor[0]] = successor[2] + node_cost[current_node[0]]
-                    priority = node_cost[successor[0]] + heuristic(successor[0], problem)
-                    priority_queue.push(successor, priority)
-    
+        for successor_state, action, cost in problem.getSuccessors(current_node[0]):
+            total_cost = node_cost[current_node[0]] + cost
+
+            if (successor_state not in visited_nodes) and ((successor_state not in node_cost) or (total_cost < node_cost[successor_state])):
+                node_cost[successor_state] = total_cost
+                priority = total_cost + heuristic(successor_state, problem)
+                priority_queue.push(((successor_state, action, total_cost), path + [action]), priority)
+
     print("#### Path not found ####\n\n")
     return False
 
